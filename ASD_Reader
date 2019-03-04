@@ -1,0 +1,22 @@
+import specdal
+from matplotlib import pyplot as plt
+import pandas as pd
+import numpy as np
+import os
+from os import listdir
+from os.path import isfile, join
+
+data_path = '/Users/yaytac/Documents/ASD/20181108'
+save_path = '/Users/yaytac/Documents/ASD/20181108_test/'
+correction_path = '/Users/yaytac/Documents/ASD/calibration_multiply.csv'
+
+calibrated=pd.read_csv(correction_path) 
+panel_extracted=pd.DataFrame()
+for f in sorted(os.listdir(data_path))[:]:
+    if not f.startswith('11'):
+        data = specdal.read(os.path.join(data_path, f))[0].reset_index()
+        data_meta=specdal.read(os.path.join(data_path, f))[1]
+        data['tgt_radiance']=(1000/data_meta['integration_time'])*data['tgt_radiance']
+        data['Radiance(W/m2nmsr)']=data['tgt_radiance']*calibrated['Correction(per_sec)']
+        data.to_csv(save_path+str(f)+'.csv')
+        
